@@ -1,4 +1,4 @@
-const mamiLogger = require('./index');
+const mamiLogger = require('./mamiLogger');
 
 const logger = mamiLogger({
     level: 'info',
