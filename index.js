@@ -9,9 +9,9 @@ const graylog2 = require('graylog2');
 const defaultOptions = {
     level: 'info',
     timestamp: true,
-    servers: [{ host: 'graylog.stage.odeal.cc', port: 12201 }],
-    hostname: 'metadata.service',
-    facility: 'Metadffataa',
+    servers: [{ host: 'localhost', port: 12201 }],
+    hostname: 'node.service',
+    facility: 'service',
     full_message: 'false',
     deflate: 'never'
 };
