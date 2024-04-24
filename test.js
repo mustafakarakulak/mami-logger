@@ -1,6 +1,13 @@
 const mamiLogger = require('./index');
 
-const logger = mamiLogger();
+const logger = mamiLogger({
+    level: 'info',
+    timestamp: true,
+    servers: [{ host: 'localhost', port: 12201 }],
+    hostname: 'hosts',
+    facility: 'facility',
+    deflate: 'never'
+});
 
 logger.info('Bu bir info log mesajıdır.');
 

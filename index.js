@@ -12,7 +12,6 @@ const defaultOptions = {
     servers: [{ host: 'localhost', port: 12201 }],
     hostname: 'node.service',
     facility: 'service',
-    full_message: 'false',
     deflate: 'never'
 };
 

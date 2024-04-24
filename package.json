@@ -1,8 +1,8 @@
 {
   "name": "mami-logger",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A logger package for logging to console and Graylog",
+  "main": "mamiLogger.js",
   "scripts": {
     "test": "node test.js"
   },
@@ -13,7 +13,15 @@
     "mami-logger"
   ],
   "author": "mustafakarakulak",
-  "license": "ISC",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mustafakarakulak/mami-logger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mustafakarakulak/mami-logger/issues"
+  },
+  "homepage": "https://github.com/mustafakarakulak/mami-logger",
   "dependencies": {
     "colorette": "^2.0.20",
     "date-fns": "^3.6.0",
