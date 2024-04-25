@@ -4,7 +4,7 @@ const colorette = require('colorette');
 const { cyan, red } = colorette;
 const { gray } = colorette;
 const { format } = require('date-fns');
-const graylog2 = require('graylog2');
+const graylog2 = require('./graylog');
 
 const defaultOptions = {
     level: 'info',
@@ -37,34 +37,36 @@ function mamiLogger(options = {}) {
                 stringLevel: 'Information'
             });
         },
-        error: (...args) => {
-            console.error(red('[ERROR]'), options.timestamp ? getTimestamp() : '', red(...args));
-            graylog.error(args.join(' '), {
+        error: (trackId, err) => {
+            console.error(red('[ERROR]'), options.timestamp ? getTimestamp() : '', red(`[${trackId}]`), err);
+            graylog.error(err, {
                 stringLevel: 'Error',
-                trackId: args[0]
+                level: 'Error',
+                trackId
             });
         },
-        request: (trackId, req) => {
+        request: (trackId, msg, req, reqBody) => {
             console.log(cyan('[REQUEST]'), options.timestamp ? getTimestamp() : '', cyan(`[${trackId}]`), req.method, req.originalUrl);
-            graylog.info(`Incoming Request: ${req.method} ${req.originalUrl}`, req, {
+            graylog.info(`${msg} ${req.method} ${req.originalUrl}`, reqBody, {
                 stringLevel: 'Information',
                 RequestMethod: req.method,
                 Path: req.originalUrl,
                 level: 'Information',
-                trackId
+                trackId: trackId,
+                RequestBody: reqBody
             });
         },
-        response: (trackId, res) => {
+        response: (trackId, msg, res, resBody) => {
             console.log(cyan('[RESPONSE]'), options.timestamp ? getTimestamp() : '', cyan(`[${trackId}]`), res.status);
-            graylog.info(`Outgoing Response: ${res.status}`, res, {
+            graylog.info(`${msg} ${res.status}`, resBody, {
                 stringLevel: 'Information',
                 ResponseStatus: res.status,
                 level: 'Information',
-                trackId
+                trackId: trackId,
+                ResponseBody: resBody
             });
         }
     };
 }
 
-// Logger fonksiyonunu dışa aktarın
 module.exports = mamiLogger;

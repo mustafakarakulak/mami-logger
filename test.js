@@ -3,16 +3,21 @@ const mamiLogger = require('./mamiLogger');
 const logger = mamiLogger({
     level: 'info',
     timestamp: true,
-    servers: [{ host: 'localhost', port: 12201 }],
-    hostname: 'hosts',
-    facility: 'facility',
+    servers: [{ host: 'graylog.stage.odeal.cc', port: 12201 }],
+    hostname: 'metadata.test',
+    facility: 'Metadata',
     deflate: 'never'
 });
 
-logger.info('Bu bir info log mesajıdır.');
+logger.info('Hello, world!');
 
-logger.error(124241, 'Exception.Message Bu bir hata log mesajıdır.');
+logger.error('123', 'This is an error!');
 
-logger.request('123456', { method: 'GET', originalUrl: '/test' });
+logger.request('123', 'Request received:', {
+    method: 'GET',
+    originalUrl: '/test'
+}, 'This is the request body');
 
-logger.response('123456', { status: 200 });
+logger.response('123', 'Response sent:', {
+    status: 200
+}, 'This is the response body');
