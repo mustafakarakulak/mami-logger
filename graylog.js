@@ -77,35 +77,14 @@ graylog.prototype.destroy = function () {
     }
 };
 
-graylog.prototype.emergency = function (short_message, full_message, additionalFields, timestamp) {
-    return this._log(short_message, full_message, additionalFields, timestamp, this.level.EMERG);
-};
-
-graylog.prototype.alert = function (short_message, full_message, additionalFields, timestamp) {
-    return this._log(short_message, full_message, additionalFields, timestamp, this.level.ALERT);
-};
-
-graylog.prototype.critical = function (short_message, full_message, additionalFields, timestamp) {
-    return this._log(short_message, full_message, additionalFields, timestamp, this.level.CRIT);
-};
-
 graylog.prototype.error = function (short_message, full_message, additionalFields, timestamp) {
     return this._log(short_message, full_message, additionalFields, timestamp, this.level.ERROR);
 };
 
-graylog.prototype.warning = function (short_message, full_message, additionalFields, timestamp) {
-    return this._log(short_message, full_message, additionalFields, timestamp, this.level.WARNING);
-};
-graylog.prototype.warn = graylog.prototype.warning;
-
-graylog.prototype.notice = function (short_message, full_message, additionalFields, timestamp) {
-    return this._log(short_message, full_message, additionalFields, timestamp, this.level.NOTICE);
-};
 
 graylog.prototype.info = function (short_message, full_message, additionalFields, timestamp) {
     return this._log(short_message, full_message, additionalFields, timestamp, this.level.INFO);
 };
-graylog.prototype.log = graylog.prototype.info;
 
 graylog.prototype.debug = function (short_message, full_message, additionalFields, timestamp) {
     return this._log(short_message, full_message, additionalFields, timestamp, this.level.DEBUG);
@@ -160,7 +139,6 @@ graylog.prototype._log = function log(short_message, full_message, additionalFie
         message['_' + field] = additionalFields[field];
     }
 
-    // https://github.com/Graylog2/graylog2-docs/wiki/GELF
     if (message._id) {
         message.__id = message._id;
         delete message._id;
@@ -175,16 +153,13 @@ graylog.prototype._log = function log(short_message, full_message, additionalFie
             return that.emitError(err);
         }
 
-        // If it all fits, just send it
         if (buffer.length <= that._bufferSize) {
             that._unsentMessages -= 1;
             return that.send(buffer, that.getServer());
         }
 
-        // It didn't fit, so prepare for a chunked stream
-
         var bufferSize = that._bufferSize;
-        var dataSize   = bufferSize - 12;  // the data part of the buffer is the buffer size - header size
+        var dataSize   = bufferSize - 12;
         var chunkCount = Math.ceil(buffer.length / dataSize);
 
         if (chunkCount > 128) {
@@ -192,28 +167,21 @@ graylog.prototype._log = function log(short_message, full_message, additionalFie
             return that.emitError('Cannot log messages bigger than ' + (dataSize * 128) +  ' bytes');
         }
 
-        // Generate a random id in buffer format
         crypto.randomBytes(8, function (err, id) {
             if (err) {
                 that._unsentMessages -= 1;
                 return that.emitError(err);
             }
 
-            // To be tested: what's faster, sending as we go or prebuffering?
             var server = that.getServer();
-            var chunk = new Buffer(bufferSize);
+            var chunk = Buffer.alloc(bufferSize);
             var chunkSequenceNumber = 0;
 
-            // Prepare the header
-
-            // Set up magic number (bytes 0 and 1)
             chunk[0] = 30;
             chunk[1] = 15;
 
-            // Set the total number of chunks (byte 11)
             chunk[11] = chunkCount;
 
-            // Set message id (bytes 2-9)
             id.copy(chunk, 2, 0, 8);
 
             function send(err) {

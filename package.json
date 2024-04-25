@@ -1,6 +1,6 @@
 {
   "name": "mami-logger",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "A logger package for logging to console and Graylog",
   "main": "mamiLogger.js",
   "scripts": {

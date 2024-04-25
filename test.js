@@ -11,7 +11,7 @@ const logger = mamiLogger({
 
 logger.info('Hello, world!');
 
-logger.error('123', 'This is an error!');
+logger.error('123', 'An error occurred:', new Error('This is an error'));
 
 logger.request('123', 'Request received:', {
     method: 'GET',

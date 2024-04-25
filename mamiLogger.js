@@ -12,19 +12,25 @@ const defaultOptions = {
     servers: [{ host: 'localhost', port: 12201 }],
     hostname: 'node.service',
     facility: 'service',
-    deflate: 'never'
+    deflate: 'never',
+    bufferSize: 1400,
+    shortMessageSize: 200,
 };
 
 function mamiLogger(options = {}) {
     options = Object.assign({}, defaultOptions, options);
 
     const graylog = new graylog2.graylog({
-        servers: options.servers,
-        hostname: options.hostname,
-        facility: options.facility,
+        servers: options.servers || [{ host: 'localhost', port: 12201 }],
+        hostname: options.hostname || 'node.service',
+        facility: options.facility || 'service',
         full_message: options.full_message,
-        deflate: options.deflate
+        deflate: options.deflate || 'never',
     });
+
+    function truncateMessage(message) {
+        return message.length > options.shortMessageSize ? message.slice(0, options.shortMessageSize) + '...' : message;
+    }
 
     function getTimestamp() {
         return gray(format(new Date(), '[dd-MM-yyyy HH:mm:ss]'));
@@ -32,38 +38,49 @@ function mamiLogger(options = {}) {
 
     return {
         info: (...args) => {
-            console.log(cyan('[INFO]'), options.timestamp ? getTimestamp() : '', cyan(...args));
+            console.info(cyan('[INFO]'), options.timestamp ? getTimestamp() : '', cyan(...args));
             graylog.info(args.join(' '), {
                 stringLevel: 'Information'
             });
         },
-        error: (trackId, err) => {
-            console.error(red('[ERROR]'), options.timestamp ? getTimestamp() : '', red(`[${trackId}]`), err);
-            graylog.error(err, {
+        error: (trackId, msg, err) => {
+            console.error(red('[ERROR]'), options.timestamp ? getTimestamp() : '', red(err));
+            graylog.error(`${msg} ${err}`, err,{
                 stringLevel: 'Error',
                 level: 'Error',
                 trackId
             });
         },
         request: (trackId, msg, req, reqBody) => {
-            console.log(cyan('[REQUEST]'), options.timestamp ? getTimestamp() : '', cyan(`[${trackId}]`), req.method, req.originalUrl);
-            graylog.info(`${msg} ${req.method} ${req.originalUrl}`, reqBody, {
+            let truncatedReqBody = truncateMessage(reqBody);
+
+            console.info(cyan('[REQUEST]'),
+                options.timestamp ? getTimestamp() : '',
+                msg, cyan(`[${trackId}]`), reqBody);
+
+            graylog.info(`${msg} ${truncatedReqBody}`, reqBody, {
                 stringLevel: 'Information',
                 RequestMethod: req.method,
                 Path: req.originalUrl,
                 level: 'Information',
                 trackId: trackId,
-                RequestBody: reqBody
+                RequestBody: truncatedReqBody
             });
         },
-        response: (trackId, msg, res, resBody) => {
-            console.log(cyan('[RESPONSE]'), options.timestamp ? getTimestamp() : '', cyan(`[${trackId}]`), res.status);
-            graylog.info(`${msg} ${res.status}`, resBody, {
+        response: (trackId, msg, req, resBody) => {
+            let truncatedResBody = truncateMessage(resBody);
+
+            console.info(cyan('[RESPONSE]'),
+                options.timestamp ? getTimestamp() : '',
+                msg, cyan(`[${trackId}]`), resBody);
+
+            graylog.info(`${msg} ${truncatedResBody}`, resBody, {
                 stringLevel: 'Information',
-                ResponseStatus: res.status,
+                RequestMethod: req.method,
+                Path: req.originalUrl,
                 level: 'Information',
                 trackId: trackId,
-                ResponseBody: resBody
+                ResponseBody: truncatedResBody
             });
         }
     };
