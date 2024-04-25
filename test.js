@@ -3,9 +3,9 @@ const mamiLogger = require('./mamiLogger');
 const logger = mamiLogger({
     level: 'info',
     timestamp: true,
-    servers: [{ host: 'graylog.stage.odeal.cc', port: 12201 }],
-    hostname: 'metadata.test',
-    facility: 'Metadata',
+    servers: [{ host: 'localhost', port: 12201 }],
+    hostname: 'hosts',
+    facility: 'Service',
     deflate: 'never'
 });
 
